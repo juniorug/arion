@@ -30,18 +30,39 @@ type SmartContract struct {
 
 // Actor describes basic details of an actor in the SCM
 type Actor struct {
-	actorId string
+	ActorId          string            `json:"actorId"`
+	ActorType        string            `json:"actorType"`
+	ActorName        string            `json:"actorName"`
+	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
 	//assetId        string            `json:"assetId"`
-	actorType        string            `json:"actorType"`
-	actorName        string            `json:"actorName"`
-	aditionalInfoMap map[string]string `json:"aditionalInfoMap"`
 }
 
 // Step describes basic details of an step in the SCM
 type Step struct {
-	stepId string
-	//assetId        string            `json:"assetId"`
-	stepName  string `json:"stepName"`
-	stepOrder string `json:"stepOrder"`
-	actorType string `json:"actorType"`
+	StepId           string            `json:"stepId"`
+	StepName         string            `json:"stepName"`
+	StepOrder        string            `json:"stepOrder"`
+	ActorType        string            `json:"actorType"`
+	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
+	//AssetId      	 string            `json:"assetId"`
+}
+
+type AssetItem struct {
+	AssetItemId      string            `json:"assetItemId"`
+	CurrentOwnerId   string            `json:"currentOwnerId"`
+	ProcessDate      string            `json:"processDate"`  //(date which currenct actor acquired the item)
+	DeliveryDate     string            `json:"deliveryDate"` //(date which currenct actor received the item)
+	OrderPrice       string            `json:"orderPrice"`
+	ShippingPrice    string            `json:"shippingPrice"`
+	Status           string            `json:"status"`
+	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
+	//AssetId      string	`json:"assetId"`
+}
+
+type asset struct {
+	AssetId          string            `json:"assetId"`
+	AssetItems       []AssetItem       `json:"assetItems"`
+	Actors           []Actor           `json:"actors"`
+	Steps            []Step            `json:"steps"`
+	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
 }
