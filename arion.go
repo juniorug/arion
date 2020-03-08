@@ -70,16 +70,18 @@ type Asset struct {
 	Steps            []Step            `json:"steps"`
 	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
 }
+
 // QueryResult structure used for handling result of query
 type QueryResult struct {
 	Key    string `json:"Key"`
 	Record *AssetItem
 }
+
 // InitLedger adds a base set of items to the ledger
 func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) error {
-	
+
 	aditionalInfoMap := make(map[string]string)
-	
+
 	actors := []Actor{
 		Actor{ActorId: "1", ActorType: "rawMaterial", ActorName: "James Johnson", AditionalInfoMap: aditionalInfoMap},
 		Actor{ActorId: "2", ActorType: "manufacturer", ActorName: "Helena Smith", AditionalInfoMap: aditionalInfoMap},
@@ -92,23 +94,23 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 
 	assetItems := []AssetItem{
 		AssetItem{
-			AssetItemId: "1", 
-			CurrentOwnerId: "1", 
-			ProcessDate: "2020-03-07T15:04:05", 
-			DeliveryDate: "", 
-			OrderPrice: "", 
-			ShippingPrice: "",
-			Status: "order initiated",
+			AssetItemId:      "1",
+			CurrentOwnerId:   "1",
+			ProcessDate:      "2020-03-07T15:04:05",
+			DeliveryDate:     "",
+			OrderPrice:       "",
+			ShippingPrice:    "",
+			Status:           "order initiated",
 			AditionalInfoMap: aditionalInfoMap,
 		},
 		AssetItem{
-			AssetItemId: "2", 
-			CurrentOwnerId: "1", 
-			ProcessDate: "2020-03-07T15:04:05", 
-			DeliveryDate: "", 
-			OrderPrice: "", 
-			ShippingPrice: "",
-			Status: "order initiated",
+			AssetItemId:      "2",
+			CurrentOwnerId:   "1",
+			ProcessDate:      "2020-03-07T15:04:05",
+			DeliveryDate:     "",
+			OrderPrice:       "",
+			ShippingPrice:    "",
+			Status:           "order initiated",
 			AditionalInfoMap: aditionalInfoMap,
 		},
 	}
@@ -118,8 +120,8 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 	}
 
 	for i, asset := range assets {
-		assetsAsBytes, _ := json.Marshal(assets)
-		err := ctx.GetStub().PutState("ASSET"+strconv.Itoa(i), assetsAsBytes)
+		assetAsBytes, _ := json.Marshal(asset)
+		err := ctx.GetStub().PutState("ASSET"+strconv.Itoa(i), assetAsBytes)
 
 		if err != nil {
 			return fmt.Errorf("Failed to put to world state. %s", err.Error())
@@ -132,52 +134,52 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 // CreateActor adds a new Actor to the world state with given details
 func (s *SmartContract) CreateActor(ctx contractapi.TransactionContextInterface, actorId string, actorType string, actorName string, aditionalInfoMap map[string]string) error {
 	actor := Actor{
-		ActorId:   actorId,
-		ActorType:  actorType,
-		ActorName: actorName,
-		AditionalInfoMap:  aditionalInfoMap,
+		ActorId:          actorId,
+		ActorType:        actorType,
+		ActorName:        actorName,
+		AditionalInfoMap: aditionalInfoMap,
 	}
 	actorAsBytes, _ := json.Marshal(actor)
-	return ctx.GetStub().PutState("ACTOR"+ActorId, actorAsBytes)
+	return ctx.GetStub().PutState("ACTOR"+actorId, actorAsBytes)
 }
 
 // CreateStep adds a new Step to the world state with given details
-func (s *SmartContract) CreateStep(ctx contractapi.TransactionContextInterface, stepId string, stepName string, stepOrder string, actorType: string, aditionalInfoMap map[string]string) error {
+func (s *SmartContract) CreateStep(ctx contractapi.TransactionContextInterface, stepId string, stepName string, stepOrder uint, actorType string, aditionalInfoMap map[string]string) error {
 	step := Step{
-		StepId:   stepId,
-		StepName:  stepName,
-		StepOrder: stepOrder,
-		ActorType: actorType,
-		AditionalInfoMap:  aditionalInfoMap,
+		StepId:           stepId,
+		StepName:         stepName,
+		StepOrder:        stepOrder,
+		ActorType:        actorType,
+		AditionalInfoMap: aditionalInfoMap,
 	}
 	stepAsBytes, _ := json.Marshal(step)
 	return ctx.GetStub().PutState("STEP"+stepId, stepAsBytes)
 }
 
 // CreateAssetItem adds a new AssetItem to the world state with given details
-func (s *SmartContract) CreateAssetItem(ctx contractapi.TransactionContextInterface, assetItemId string, currentOwnerId string, processDate string, deliveryDate: string,  shippingPrice: string,  status: string, aditionalInfoMap map[string]string) error {
+func (s *SmartContract) CreateAssetItem(ctx contractapi.TransactionContextInterface, assetItemId string, currentOwnerId string, processDate string, deliveryDate string, orderPrice string, shippingPrice string, status string, aditionalInfoMap map[string]string) error {
 	assetItem := AssetItem{
-		AssetItemId:   assetItemId,
-		CurrentOwnerId:  currentOwnerId,
-		ProcessDate: processDate,
-		DeliveryDate: deliveryDate,
-		OrderPrice:   orderPrice,
-		ShippingPrice:  shippingPrice,
-		Status: status,
-		AditionalInfoMap:  aditionalInfoMap,
+		AssetItemId:      assetItemId,
+		CurrentOwnerId:   currentOwnerId,
+		ProcessDate:      processDate,
+		DeliveryDate:     deliveryDate,
+		OrderPrice:       orderPrice,
+		ShippingPrice:    shippingPrice,
+		Status:           status,
+		AditionalInfoMap: aditionalInfoMap,
 	}
 	assetItemAsBytes, _ := json.Marshal(assetItem)
 	return ctx.GetStub().PutState("ASSET_ITEM"+assetItemId, assetItemAsBytes)
 }
 
 // CreateAsset adds a new Asset to the world state with given details
-func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, assetId string, assetItems []AssetItem, actors []Actor, steps: []Step, aditionalInfoMap map[string]string) error {
+func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, assetId string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
 	asset := Asset{
-		AssetId:   assetId,
-		AssetItems:  assetItems,
-		Actors: actors,
-		Steps: steps,
-		AditionalInfoMap:  aditionalInfoMap,
+		AssetId:          assetId,
+		AssetItems:       assetItems,
+		Actors:           actors,
+		Steps:            steps,
+		AditionalInfoMap: aditionalInfoMap,
 	}
 	assetAsBytes, _ := json.Marshal(asset)
 	return ctx.GetStub().PutState("ASSET"+assetId, assetAsBytes)
@@ -185,7 +187,7 @@ func (s *SmartContract) CreateAsset(ctx contractapi.TransactionContextInterface,
 
 // QueryActor returns the actor stored in the world state with given id
 func (s *SmartContract) QueryActor(ctx contractapi.TransactionContextInterface, actorId string) (*Actor, error) {
-	actorAsBytes, err := ctx.GetStub().GetState("ACTOR"+actorId)
+	actorAsBytes, err := ctx.GetStub().GetState("ACTOR" + actorId)
 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
@@ -203,7 +205,7 @@ func (s *SmartContract) QueryActor(ctx contractapi.TransactionContextInterface, 
 
 // QueryStep returns the step stored in the world state with given id
 func (s *SmartContract) QueryStep(ctx contractapi.TransactionContextInterface, stepId string) (*Step, error) {
-	stepAsBytes, err := ctx.GetStub().GetState("STEP"+stepId)
+	stepAsBytes, err := ctx.GetStub().GetState("STEP" + stepId)
 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
@@ -220,8 +222,8 @@ func (s *SmartContract) QueryStep(ctx contractapi.TransactionContextInterface, s
 }
 
 // QueryAssetItem returns the AssetItem stored in the world state with given id
-func (s *SmartContract) QueryStep(ctx contractapi.TransactionContextInterface, assetItemId string) (*AssetItem, error) {
-	assetItemAsBytes, err := ctx.GetStub().GetState("ASSET_ITEM"+assetItemId)
+func (s *SmartContract) QueryAssetItem(ctx contractapi.TransactionContextInterface, assetItemId string) (*AssetItem, error) {
+	assetItemAsBytes, err := ctx.GetStub().GetState("ASSET_ITEM" + assetItemId)
 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
@@ -238,8 +240,8 @@ func (s *SmartContract) QueryStep(ctx contractapi.TransactionContextInterface, a
 }
 
 // QueryAsset returns the Asset stored in the world state with given id
-func (s *SmartContract) QueryStep(ctx contractapi.TransactionContextInterface, assetId string) (*Asset, error) {
-	assetAsBytes, err := ctx.GetStub().GetState("ASSET"+assetId)
+func (s *SmartContract) QueryAsset(ctx contractapi.TransactionContextInterface, assetId string) (*Asset, error) {
+	assetAsBytes, err := ctx.GetStub().GetState("ASSET" + assetId)
 
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
@@ -254,26 +256,43 @@ func (s *SmartContract) QueryStep(ctx contractapi.TransactionContextInterface, a
 
 	return asset, nil
 }
+
 //TODO: create 'allQueries' methods:
 //QueryAllActors
 //QueryAllSteps
 //QueryAllAssetItems
 //QueryAllAssets
 
-
 // ChangeAssetItemOwner updates the owner field of assetItem with given id in world state
-func (s *SmartContract) ChangeAssetItemOwner(ctx contractapi.TransactionContextInterface, AssetItemId string, newOwnerId string) error {
+func (s *SmartContract) ChangeAssetItemOwner(ctx contractapi.TransactionContextInterface, assetItemId string, newOwnerId string, orderPrice string, shippingPrice string, status string, aditionalInfo map[string]string) error {
 	assetItem, err := s.QueryAssetItem(ctx, "ASSET_ITEM"+assetItemId)
 	if err != nil {
 		return err
 	}
 
 	assetItem.CurrentOwnerId = newOwnerId
-	assetItem.ProcessDate = time.Now()
+	assetItem.ProcessDate = time.Now().Format("2006-01-02 15:04:05")
 	assetItem.OrderPrice = orderPrice
 	assetItem.ShippingPrice = shippingPrice
-	assetItem.Status = Status
-	for key, value := range AditionalInfo {
+	assetItem.Status = status
+	for key, value := range aditionalInfo {
 		assetItem.AditionalInfoMap[key] = value
+	}
+
+	assetItemAsBytes, _ := json.Marshal(assetItem)
+	return ctx.GetStub().PutState("ASSET_ITEM"+assetItemId, assetItemAsBytes)
+}
+
+func main() {
+
+	chaincode, err := contractapi.NewChaincode(new(SmartContract))
+
+	if err != nil {
+		fmt.Printf("Error create Arion chaincode: %s", err.Error())
+		return
+	}
+
+	if err := chaincode.Start(); err != nil {
+		fmt.Printf("Error starting Arion chaincode: %s", err.Error())
 	}
 }
