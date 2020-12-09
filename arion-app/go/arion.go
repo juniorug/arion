@@ -136,18 +136,44 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 
 // CreateActor adds a new Actor to the world state with given details
 func (s *AssetTransferSmartContract) CreateActor(ctx contractapi.TransactionContextInterface, actorID string, actorType string, actorName string, aditionalInfoMap map[string]string) error {
+	actorJSON, err := ctx.GetStub().GetState(actorID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if actorJSON != nil {
+		return fmt.Errorf("The actor %s already exists", actorID)
+	}
+
 	actor := Actor{
 		ActorID:          actorID,
 		ActorType:        actorType,
 		ActorName:        actorName,
 		AditionalInfoMap: aditionalInfoMap,
 	}
-	actorAsBytes, _ := json.Marshal(actor)
+
+	actorAsBytes, err := json.Marshal(actor)
+
+	if err != nil {
+		return err
+	}
+
 	return ctx.GetStub().PutState("ACTOR"+actorID, actorAsBytes)
 }
 
 // CreateStep adds a new Step to the world state with given details
 func (s *AssetTransferSmartContract) CreateStep(ctx contractapi.TransactionContextInterface, stepID string, stepName string, stepOrder uint, actorType string, aditionalInfoMap map[string]string) error {
+	stepJSON, err := ctx.GetStub().GetState(stepID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if stepJSON != nil {
+		return fmt.Errorf("The step %s already exists", stepID)
+	}
+
 	step := Step{
 		StepID:           stepID,
 		StepName:         stepName,
@@ -155,12 +181,27 @@ func (s *AssetTransferSmartContract) CreateStep(ctx contractapi.TransactionConte
 		ActorType:        actorType,
 		AditionalInfoMap: aditionalInfoMap,
 	}
-	stepAsBytes, _ := json.Marshal(step)
+	stepAsBytes, err := json.Marshal(step)
+
+	if err != nil {
+		return err
+	}
+
 	return ctx.GetStub().PutState("STEP"+stepID, stepAsBytes)
 }
 
 // CreateAssetItem adds a new AssetItem to the world state with given details
 func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, currentOwnerID string, processDate string, deliveryDate string, orderPrice string, shippingPrice string, status string, aditionalInfoMap map[string]string) error {
+	assetItemJSON, err := ctx.GetStub().GetState(assetItemID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if assetItemJSON != nil {
+		return fmt.Errorf("The assetItem %s already exists", assetItemID)
+	}
+
 	assetItem := AssetItem{
 		AssetItemID:      assetItemID,
 		CurrentOwnerID:   currentOwnerID,
@@ -171,12 +212,27 @@ func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.Transaction
 		Status:           status,
 		AditionalInfoMap: aditionalInfoMap,
 	}
-	assetItemAsBytes, _ := json.Marshal(assetItem)
+	assetItemAsBytes, err := json.Marshal(assetItem)
+
+	if err != nil {
+		return err
+	}
+
 	return ctx.GetStub().PutState("ASSET_ITEM"+assetItemID, assetItemAsBytes)
 }
 
 // CreateAsset adds a new Asset to the world state with given details
 func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
+	assetJSON, err := ctx.GetStub().GetState(assetID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if assetJSON != nil {
+		return fmt.Errorf("The asset %s already exists", assetID)
+	}
+
 	asset := Asset{
 		AssetID:          assetID,
 		AssetItems:       assetItems,
@@ -184,7 +240,12 @@ func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionCont
 		Steps:            steps,
 		AditionalInfoMap: aditionalInfoMap,
 	}
-	assetAsBytes, _ := json.Marshal(asset)
+	assetAsBytes, err := json.Marshal(asset)
+
+	if err != nil {
+		return err
+	}
+
 	return ctx.GetStub().PutState("ASSET"+assetID, assetAsBytes)
 }
 
