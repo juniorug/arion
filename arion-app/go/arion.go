@@ -125,7 +125,6 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 	for i, asset := range assets {
 		assetAsBytes, _ := json.Marshal(asset)
 		err := ctx.GetStub().PutState("ASSET_"+strconv.Itoa(i), assetAsBytes)
-
 		if err != nil {
 			return fmt.Errorf("Failed to put to world state. %s", err.Error())
 		}
@@ -154,7 +153,6 @@ func (s *AssetTransferSmartContract) CreateActor(ctx contractapi.TransactionCont
 	}
 
 	actorAsBytes, err := json.Marshal(actor)
-
 	if err != nil {
 		return err
 	}
@@ -181,8 +179,8 @@ func (s *AssetTransferSmartContract) CreateStep(ctx contractapi.TransactionConte
 		ActorType:        actorType,
 		AditionalInfoMap: aditionalInfoMap,
 	}
-	stepAsBytes, err := json.Marshal(step)
 
+	stepAsBytes, err := json.Marshal(step)
 	if err != nil {
 		return err
 	}
@@ -212,8 +210,8 @@ func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.Transaction
 		Status:           status,
 		AditionalInfoMap: aditionalInfoMap,
 	}
-	assetItemAsBytes, err := json.Marshal(assetItem)
 
+	assetItemAsBytes, err := json.Marshal(assetItem)
 	if err != nil {
 		return err
 	}
@@ -240,8 +238,8 @@ func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionCont
 		Steps:            steps,
 		AditionalInfoMap: aditionalInfoMap,
 	}
-	assetAsBytes, err := json.Marshal(asset)
 
+	assetAsBytes, err := json.Marshal(asset)
 	if err != nil {
 		return err
 	}
@@ -321,11 +319,117 @@ func (s *AssetTransferSmartContract) QueryAsset(ctx contractapi.TransactionConte
 	return asset, nil
 }
 
-//TODO: create 'allQueries' methods:
-//QueryAllActors
-//QueryAllSteps
-//QueryAllAssetItems
-//QueryAllAssets
+//QueryAllActors returns the actors' list stored in the world state
+func (s *AssetTransferSmartContract) QueryAllActors(ctx contractapi.TransactionContextInterface) ([]*Actor, error) {
+
+	actorsIterator, err := ctx.GetStub().GetStateByRange("ACTOR_0", "ACTOR_9999999999999999999")
+	if err != nil {
+		return nil, err
+	}
+
+	defer actorsIterator.Close()
+
+	var actors []*Actor
+	for actorsIterator.HasNext() {
+		actorResponse, err := actorsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var actor *Actor
+		err = json.Unmarshal(actorResponse.Value, &actor)
+		if err != nil {
+			return nil, err
+		}
+		actors = append(actors, actor)
+	}
+
+	return actors, nil
+}
+
+//QueryAllSteps returns the steps' list stored in the world state
+func (s *AssetTransferSmartContract) QueryAllSteps(ctx contractapi.TransactionContextInterface) ([]*Step, error) {
+
+	stepsIterator, err := ctx.GetStub().GetStateByRange("STEP_0", "STEP_9999999999999999999")
+	if err != nil {
+		return nil, err
+	}
+
+	defer stepsIterator.Close()
+
+	var steps []*Step
+	for stepsIterator.HasNext() {
+		stepResponse, err := stepsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var step *Step
+		err = json.Unmarshal(stepResponse.Value, &step)
+		if err != nil {
+			return nil, err
+		}
+		steps = append(steps, step)
+	}
+
+	return steps, nil
+}
+
+//QueryAllAssetItems returns the asset items' list stored in the world state
+func (s *AssetTransferSmartContract) QueryAllAssetItems(ctx contractapi.TransactionContextInterface) ([]*AssetItem, error) {
+
+	assetItemsIterator, err := ctx.GetStub().GetStateByRange("ASSET_ITEM_0", "ASSET_ITEM_9999999999999999999")
+	if err != nil {
+		return nil, err
+	}
+
+	defer assetItemsIterator.Close()
+
+	var assetItems []*AssetItem
+	for assetItemsIterator.HasNext() {
+		assetItemResponse, err := assetItemsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var assetItem *AssetItem
+		err = json.Unmarshal(assetItemResponse.Value, &assetItem)
+		if err != nil {
+			return nil, err
+		}
+		assetItems = append(assetItems, assetItem)
+	}
+
+	return assetItems, nil
+}
+
+//QueryAllAssets returns the assets' list stored in the world state
+func (s *AssetTransferSmartContract) QueryAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
+
+	assetsIterator, err := ctx.GetStub().GetStateByRange("ASSET_0", "ASSET_9999999999999999999")
+	if err != nil {
+		return nil, err
+	}
+
+	defer assetsIterator.Close()
+
+	var assets []*Asset
+	for assetsIterator.HasNext() {
+		assetResponse, err := assetsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+
+		var asset *Asset
+		err = json.Unmarshal(assetResponse.Value, &asset)
+		if err != nil {
+			return nil, err
+		}
+		assets = append(assets, asset)
+	}
+
+	return assets, nil
+}
 
 // ChangeAssetItemOwner updates the owner field of assetItem with given id in world state
 func (s *AssetTransferSmartContract) ChangeAssetItemOwner(ctx contractapi.TransactionContextInterface, assetItemID string, newOwnerID string, orderPrice string, shippingPrice string, status string, aditionalInfo map[string]string) error {
