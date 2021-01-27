@@ -49,7 +49,6 @@ type Step struct {
 	StepOrder        uint              `json:"stepOrder"`
 	ActorType        string            `json:"actorType"`
 	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
-	//AssetID      	 string            `json:"assetID"`
 }
 
 // AssetItem describes ths single item in the SCM
@@ -62,12 +61,12 @@ type AssetItem struct {
 	ShippingPrice    string            `json:"shippingPrice"`
 	Status           string            `json:"status"`
 	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
-	//AssetID      string	`json:"assetID"`
 }
 
 // Asset is the collection of assetItems in the SCM
 type Asset struct {
 	AssetID          string            `json:"assetID"`
+	AssetName        string            `json:"assetName"`
 	AssetItems       []AssetItem       `json:"assetItems"`
 	Actors           []Actor           `json:"actors"`
 	Steps            []Step            `json:"steps"`
@@ -90,9 +89,25 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 		Actor{ActorID: "2", ActorType: "manufacturer", ActorName: "Helena Smith", AditionalInfoMap: aditionalInfoMap},
 	}
 
+	for i, actor := range actors {
+		actorAsBytes, _ := json.Marshal(actor)
+		err := ctx.GetStub().PutState("ACTOR_"+strconv.Itoa(i), actorAsBytes)
+		if err != nil {
+			return fmt.Errorf("Failed to put the actor[%d] to world state. %s", i, err.Error())
+		}
+	}
+
 	steps := []Step{
 		Step{StepID: "1", StepName: "exploration", StepOrder: 1, ActorType: "rawMaterial", AditionalInfoMap: aditionalInfoMap},
 		Step{StepID: "2", StepName: "Production", StepOrder: 2, ActorType: "manufacturer", AditionalInfoMap: aditionalInfoMap},
+	}
+
+	for i, step := range steps {
+		stepAsBytes, _ := json.Marshal(step)
+		err := ctx.GetStub().PutState("STEP_"+strconv.Itoa(i), stepAsBytes)
+		if err != nil {
+			return fmt.Errorf("Failed to put the step[%d] to world state. %s", i, err.Error())
+		}
 	}
 
 	assetItems := []AssetItem{
@@ -118,8 +133,23 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 		},
 	}
 
+	for i, assetItem := range assetItems {
+		assetItemAsBytes, _ := json.Marshal(assetItem)
+		err := ctx.GetStub().PutState("ASSET_ITEM_"+strconv.Itoa(i), assetItemAsBytes)
+		if err != nil {
+			return fmt.Errorf("Failed to put the assetItem[%d] to world state. %s", i, err.Error())
+		}
+	}
+
 	assets := []Asset{
-		Asset{AssetID: "Gravel", AssetItems: assetItems, Actors: actors, Steps: steps, AditionalInfoMap: aditionalInfoMap},
+		Asset{
+			AssetID:          "1",
+			AssetName:        "Gravel",
+			AssetItems:       assetItems,
+			Actors:           actors,
+			Steps:            steps,
+			AditionalInfoMap: aditionalInfoMap,
+		},
 	}
 
 	for i, asset := range assets {
@@ -220,7 +250,7 @@ func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.Transaction
 }
 
 // CreateAsset adds a new Asset to the world state with given details
-func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
+func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
 	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
 
 	if err != nil {
@@ -233,6 +263,7 @@ func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionCont
 
 	asset := Asset{
 		AssetID:          assetID,
+		AssetName:        assetName,
 		AssetItems:       assetItems,
 		Actors:           actors,
 		Steps:            steps,
