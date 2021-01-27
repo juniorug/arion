@@ -250,7 +250,6 @@ func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionCont
 // QueryActor returns the actor stored in the world state with given id
 func (s *AssetTransferSmartContract) QueryActor(ctx contractapi.TransactionContextInterface, actorID string) (*Actor, error) {
 	actorAsBytes, err := ctx.GetStub().GetState("ACTOR_" + actorID)
-
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
@@ -260,7 +259,10 @@ func (s *AssetTransferSmartContract) QueryActor(ctx contractapi.TransactionConte
 	}
 
 	actor := new(Actor)
-	_ = json.Unmarshal(actorAsBytes, actor)
+	err = json.Unmarshal(actorAsBytes, actor)
+	if err != nil {
+		return nil, err
+	}
 
 	return actor, nil
 }
@@ -268,7 +270,6 @@ func (s *AssetTransferSmartContract) QueryActor(ctx contractapi.TransactionConte
 // QueryStep returns the step stored in the world state with given id
 func (s *AssetTransferSmartContract) QueryStep(ctx contractapi.TransactionContextInterface, stepID string) (*Step, error) {
 	stepAsBytes, err := ctx.GetStub().GetState("STEP_" + stepID)
-
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
@@ -278,7 +279,10 @@ func (s *AssetTransferSmartContract) QueryStep(ctx contractapi.TransactionContex
 	}
 
 	step := new(Step)
-	_ = json.Unmarshal(stepAsBytes, step)
+	err = json.Unmarshal(stepAsBytes, step)
+	if err != nil {
+		return nil, err
+	}
 
 	return step, nil
 }
@@ -286,7 +290,6 @@ func (s *AssetTransferSmartContract) QueryStep(ctx contractapi.TransactionContex
 // QueryAssetItem returns the AssetItem stored in the world state with given id
 func (s *AssetTransferSmartContract) QueryAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string) (*AssetItem, error) {
 	assetItemAsBytes, err := ctx.GetStub().GetState("ASSET_ITEM_" + assetItemID)
-
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
@@ -296,7 +299,10 @@ func (s *AssetTransferSmartContract) QueryAssetItem(ctx contractapi.TransactionC
 	}
 
 	assetItem := new(AssetItem)
-	_ = json.Unmarshal(assetItemAsBytes, assetItem)
+	err = json.Unmarshal(assetItemAsBytes, assetItem)
+	if err != nil {
+		return nil, err
+	}
 
 	return assetItem, nil
 }
@@ -304,7 +310,6 @@ func (s *AssetTransferSmartContract) QueryAssetItem(ctx contractapi.TransactionC
 // QueryAsset returns the Asset stored in the world state with given id
 func (s *AssetTransferSmartContract) QueryAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Asset, error) {
 	assetAsBytes, err := ctx.GetStub().GetState("ASSET_" + assetID)
-
 	if err != nil {
 		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
 	}
@@ -314,7 +319,10 @@ func (s *AssetTransferSmartContract) QueryAsset(ctx contractapi.TransactionConte
 	}
 
 	asset := new(Asset)
-	_ = json.Unmarshal(assetAsBytes, asset)
+	err = json.Unmarshal(assetAsBytes, asset)
+	if err != nil {
+		return nil, err
+	}
 
 	return asset, nil
 }
@@ -447,7 +455,11 @@ func (s *AssetTransferSmartContract) ChangeAssetItemOwner(ctx contractapi.Transa
 		assetItem.AditionalInfoMap[key] = value
 	}
 
-	assetItemAsBytes, _ := json.Marshal(assetItem)
+	assetItemAsBytes, err := json.Marshal(assetItem)
+	if err != nil {
+		return err
+	}
+
 	return ctx.GetStub().PutState("ASSET_ITEM_"+assetItemID, assetItemAsBytes)
 }
 
