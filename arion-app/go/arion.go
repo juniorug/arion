@@ -85,8 +85,8 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 	aditionalInfoMap := make(map[string]string)
 
 	actors := []Actor{
-		Actor{ActorID: "1", ActorType: "rawMaterial", ActorName: "James Johnson", AditionalInfoMap: aditionalInfoMap},
-		Actor{ActorID: "2", ActorType: "manufacturer", ActorName: "Helena Smith", AditionalInfoMap: aditionalInfoMap},
+		{ActorID: "1", ActorType: "rawMaterial", ActorName: "James Johnson", AditionalInfoMap: aditionalInfoMap},
+		{ActorID: "2", ActorType: "manufacturer", ActorName: "Helena Smith", AditionalInfoMap: aditionalInfoMap},
 	}
 
 	for i, actor := range actors {
@@ -98,8 +98,8 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 	}
 
 	steps := []Step{
-		Step{StepID: "1", StepName: "exploration", StepOrder: 1, ActorType: "rawMaterial", AditionalInfoMap: aditionalInfoMap},
-		Step{StepID: "2", StepName: "Production", StepOrder: 2, ActorType: "manufacturer", AditionalInfoMap: aditionalInfoMap},
+		{StepID: "1", StepName: "exploration", StepOrder: 1, ActorType: "rawMaterial", AditionalInfoMap: aditionalInfoMap},
+		{StepID: "2", StepName: "Production", StepOrder: 2, ActorType: "manufacturer", AditionalInfoMap: aditionalInfoMap},
 	}
 
 	for i, step := range steps {
@@ -111,7 +111,7 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 	}
 
 	assetItems := []AssetItem{
-		AssetItem{
+		{
 			AssetItemID:      "1",
 			CurrentOwnerID:   "1",
 			ProcessDate:      "2020-03-07T15:04:05",
@@ -121,7 +121,7 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 			Status:           "order initiated",
 			AditionalInfoMap: aditionalInfoMap,
 		},
-		AssetItem{
+		{
 			AssetItemID:      "2",
 			CurrentOwnerID:   "1",
 			ProcessDate:      "2020-03-07T15:04:05",
@@ -142,7 +142,7 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 	}
 
 	assets := []Asset{
-		Asset{
+		{
 			AssetID:          "1",
 			AssetName:        "Gravel",
 			AssetItems:       assetItems,
