@@ -249,6 +249,35 @@ func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.Transaction
 	return ctx.GetStub().PutState("ASSET_ITEM_"+assetItemID, assetItemAsBytes)
 }
 
+// CreateAsset adds a new Asset with empty arrays to the world state with given details
+func (s *AssetTransferSmartContract) CreateEmptyAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, aditionalInfoMap map[string]string) error {
+	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if assetJSON != nil {
+		return fmt.Errorf("The asset %s already exists", assetID)
+	}
+
+	asset := Asset{
+		AssetID:          assetID,
+		AssetName:        assetName,
+		AssetItems:       []AssetItem{},
+		Actors:           []Actor{},
+		Steps:            []Step{},
+		AditionalInfoMap: aditionalInfoMap,
+	}
+
+	assetAsBytes, err := json.Marshal(asset)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ASSET_"+assetID, assetAsBytes)
+}
+
 // CreateAsset adds a new Asset to the world state with given details
 func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
 	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
@@ -492,6 +521,220 @@ func (s *AssetTransferSmartContract) ChangeAssetItemOwner(ctx contractapi.Transa
 	}
 
 	return ctx.GetStub().PutState("ASSET_ITEM_"+assetItemID, assetItemAsBytes)
+}
+
+// UpdateActor updates an existing Actor to the world state with given details
+func (s *AssetTransferSmartContract) UpdateActor(ctx contractapi.TransactionContextInterface, actorID string, actorType string, actorName string, aditionalInfoMap map[string]string) error {
+	actorJSON, err := ctx.GetStub().GetState("ACTOR_" + actorID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if actorJSON == nil {
+		return fmt.Errorf("The actor %s does not exists", actorID)
+	}
+
+	actor := Actor{
+		ActorID:          actorID,
+		ActorType:        actorType,
+		ActorName:        actorName,
+		AditionalInfoMap: aditionalInfoMap,
+	}
+
+	actorAsBytes, err := json.Marshal(actor)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ACTOR_"+actorID, actorAsBytes)
+}
+
+// UpdateStep updates an existing Step to the world state with given details
+func (s *AssetTransferSmartContract) UpdateStep(ctx contractapi.TransactionContextInterface, stepID string, stepName string, stepOrder uint, actorType string, aditionalInfoMap map[string]string) error {
+	stepJSON, err := ctx.GetStub().GetState("STEP_" + stepID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if stepJSON == nil {
+		return fmt.Errorf("The step %s does not exists", stepID)
+	}
+
+	step := Step{
+		StepID:           stepID,
+		StepName:         stepName,
+		StepOrder:        stepOrder,
+		ActorType:        actorType,
+		AditionalInfoMap: aditionalInfoMap,
+	}
+
+	stepAsBytes, err := json.Marshal(step)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("STEP_"+stepID, stepAsBytes)
+}
+
+// UpdateAssetItem updates an existing AssetItem to the world state with given details
+func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, currentOwnerID string, processDate string, deliveryDate string, orderPrice string, shippingPrice string, status string, aditionalInfoMap map[string]string) error {
+	assetItemJSON, err := ctx.GetStub().GetState("ASSET_ITEM_" + assetItemID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if assetItemJSON == nil {
+		return fmt.Errorf("The assetItem %s does not exists", assetItemID)
+	}
+
+	assetItem := AssetItem{
+		AssetItemID:      assetItemID,
+		CurrentOwnerID:   currentOwnerID,
+		ProcessDate:      processDate,
+		DeliveryDate:     deliveryDate,
+		OrderPrice:       orderPrice,
+		ShippingPrice:    shippingPrice,
+		Status:           status,
+		AditionalInfoMap: aditionalInfoMap,
+	}
+
+	assetItemAsBytes, err := json.Marshal(assetItem)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ASSET_ITEM_"+assetItemID, assetItemAsBytes)
+}
+
+// UpdateAsset updates an existing Asset to the world state with given details
+func (s *AssetTransferSmartContract) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
+	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if assetJSON == nil {
+		return fmt.Errorf("The asset %s does not exists", assetID)
+	}
+
+	asset := Asset{
+		AssetID:          assetID,
+		AssetName:        assetName,
+		AssetItems:       assetItems,
+		Actors:           actors,
+		Steps:            steps,
+		AditionalInfoMap: aditionalInfoMap,
+	}
+
+	assetAsBytes, err := json.Marshal(asset)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ASSET_"+assetID, assetAsBytes)
+}
+
+// AddActor updates an existing Asset by adding a new actor to the world state with given details
+func (s *AssetTransferSmartContract) AddActor(ctx contractapi.TransactionContextInterface, assetID string, actorID string) error {
+	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if assetJSON == nil {
+		return fmt.Errorf("The asset %s does not exists", assetID)
+	}
+
+	asset := new(Asset)
+	err = json.Unmarshal(assetJSON, asset)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	actor := new(Actor)
+	actor, err = s.QueryActor(ctx, actorID)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+	asset.Actors = append(asset.Actors, *actor)
+
+	assetAsBytes, err := json.Marshal(asset)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ASSET_"+assetID, assetAsBytes)
+}
+
+// AddStep updates an existing Asset by adding a new step to the world state with given details
+func (s *AssetTransferSmartContract) AddStep(ctx contractapi.TransactionContextInterface, assetID string, stepID string) error {
+	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if assetJSON == nil {
+		return fmt.Errorf("The asset %s does not exists", assetID)
+	}
+
+	asset := new(Asset)
+	err = json.Unmarshal(assetJSON, asset)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	step := new(Step)
+	step, err = s.QueryStep(ctx, stepID)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+	asset.Steps = append(asset.Steps, *step)
+
+	assetAsBytes, err := json.Marshal(asset)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ASSET_"+assetID, assetAsBytes)
+}
+
+// AddAssetItem updates an existing Asset by adding a new assetItem to the world state with given details
+func (s *AssetTransferSmartContract) AddAssetItem(ctx contractapi.TransactionContextInterface, assetID string, assetItemID string) error {
+	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
+
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	if assetJSON == nil {
+		return fmt.Errorf("The asset %s does not exists", assetID)
+	}
+
+	asset := new(Asset)
+	err = json.Unmarshal(assetJSON, asset)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	assetItem := new(AssetItem)
+	assetItem, err = s.QueryAssetItem(ctx, assetItemID)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+	asset.AssetItems = append(asset.AssetItems, *assetItem)
+
+	assetAsBytes, err := json.Marshal(asset)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ASSET_"+assetID, assetAsBytes)
 }
 
 func main() {
