@@ -38,6 +38,7 @@ type Actor struct {
 	ActorID          string            `json:"actorID"`
 	ActorType        string            `json:"actorType"`
 	ActorName        string            `json:"actorName"`
+	Deleted          bool              `json:"deleted"`
 	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
 	//assetID        string            `json:"assetID"`
 }
@@ -48,6 +49,7 @@ type Step struct {
 	StepName         string            `json:"stepName"`
 	StepOrder        uint              `json:"stepOrder"`
 	ActorType        string            `json:"actorType"`
+	Deleted          bool              `json:"deleted"`
 	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
 }
 
@@ -60,6 +62,7 @@ type AssetItem struct {
 	OrderPrice       string            `json:"orderPrice"`
 	ShippingPrice    string            `json:"shippingPrice"`
 	Status           string            `json:"status"`
+	Deleted          bool              `json:"deleted"`
 	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
 }
 
@@ -70,6 +73,7 @@ type Asset struct {
 	AssetItems       []AssetItem       `json:"assetItems"`
 	Actors           []Actor           `json:"actors"`
 	Steps            []Step            `json:"steps"`
+	Deleted          bool              `json:"deleted"`
 	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
 }
 
@@ -179,6 +183,7 @@ func (s *AssetTransferSmartContract) CreateActor(ctx contractapi.TransactionCont
 		ActorID:          actorID,
 		ActorType:        actorType,
 		ActorName:        actorName,
+		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
 
@@ -207,6 +212,7 @@ func (s *AssetTransferSmartContract) CreateStep(ctx contractapi.TransactionConte
 		StepName:         stepName,
 		StepOrder:        stepOrder,
 		ActorType:        actorType,
+		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
 
@@ -238,6 +244,7 @@ func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.Transaction
 		OrderPrice:       orderPrice,
 		ShippingPrice:    shippingPrice,
 		Status:           status,
+		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
 
@@ -267,6 +274,7 @@ func (s *AssetTransferSmartContract) CreateEmptyAsset(ctx contractapi.Transactio
 		AssetItems:       []AssetItem{},
 		Actors:           []Actor{},
 		Steps:            []Step{},
+		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
 
@@ -296,6 +304,7 @@ func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionCont
 		AssetItems:       assetItems,
 		Actors:           actors,
 		Steps:            steps,
+		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
 
@@ -539,6 +548,7 @@ func (s *AssetTransferSmartContract) UpdateActor(ctx contractapi.TransactionCont
 		ActorID:          actorID,
 		ActorType:        actorType,
 		ActorName:        actorName,
+		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
 
@@ -567,6 +577,7 @@ func (s *AssetTransferSmartContract) UpdateStep(ctx contractapi.TransactionConte
 		StepName:         stepName,
 		StepOrder:        stepOrder,
 		ActorType:        actorType,
+		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
 
@@ -598,6 +609,7 @@ func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.Transaction
 		OrderPrice:       orderPrice,
 		ShippingPrice:    shippingPrice,
 		Status:           status,
+		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
 
@@ -627,6 +639,7 @@ func (s *AssetTransferSmartContract) UpdateAsset(ctx contractapi.TransactionCont
 		AssetItems:       assetItems,
 		Actors:           actors,
 		Steps:            steps,
+		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
 
@@ -728,6 +741,74 @@ func (s *AssetTransferSmartContract) AddAssetItem(ctx contractapi.TransactionCon
 		return fmt.Errorf("Failed to read the data from world state: %s", err)
 	}
 	asset.AssetItems = append(asset.AssetItems, *assetItem)
+
+	assetAsBytes, err := json.Marshal(asset)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ASSET_"+assetID, assetAsBytes)
+}
+
+// DeleteActor sets the deleted flag as true for the given actor
+func (s *AssetTransferSmartContract) DeleteActor(ctx contractapi.TransactionContextInterface, actorID string) error {
+	actor, err := s.QueryActor(ctx, "ACTOR_"+actorID)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	actor.Deleted = true
+
+	actorAsBytes, err := json.Marshal(actor)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ACTOR_"+actorID, actorAsBytes)
+}
+
+// DeleteStep sets the deleted flag as true for the given step
+func (s *AssetTransferSmartContract) DeleteStep(ctx contractapi.TransactionContextInterface, stepID string) error {
+	step, err := s.QueryActor(ctx, "STEP_"+stepID)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	step.Deleted = true
+
+	stepAsBytes, err := json.Marshal(step)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("STEP_"+stepID, stepAsBytes)
+}
+
+// DeleteAssetItem sets the deleted flag as true for the given assetItem
+func (s *AssetTransferSmartContract) DeleteAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string) error {
+	assetItem, err := s.QueryActor(ctx, "ASSET_ITEM_"+assetItemID)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	assetItem.Deleted = true
+
+	assetItemAsBytes, err := json.Marshal(assetItem)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ASSET_ITEM_"+assetItemID, assetItemAsBytes)
+}
+
+// DeleteAsset sets the deleted flag as true for the given ssset
+func (s *AssetTransferSmartContract) DeleteAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
+	asset, err := s.QueryActor(ctx, "ASSET_"+assetID)
+	if err != nil {
+		return fmt.Errorf("Failed to read the data from world state: %s", err)
+	}
+
+	asset.Deleted = true
 
 	assetAsBytes, err := json.Marshal(asset)
 	if err != nil {
