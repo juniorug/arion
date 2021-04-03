@@ -56,12 +56,15 @@ type Step struct {
 // AssetItem describes ths single item in the SCM
 type AssetItem struct {
 	AssetItemID      string            `json:"assetItemID"`
-	CurrentOwnerID   string            `json:"currentOwnerID"`
+	OwnerID          string            `json:"ownerID"`
+	StepID           string            `json:"stepID"`
+	ParentID         string            `json:"parentID"`
 	ProcessDate      string            `json:"processDate"`  //(date which currenct actor acquired the item)
 	DeliveryDate     string            `json:"deliveryDate"` //(date which currenct actor received the item)
 	OrderPrice       string            `json:"orderPrice"`
 	ShippingPrice    string            `json:"shippingPrice"`
 	Status           string            `json:"status"`
+	Quantity         string            `json:"quantity"`
 	Deleted          bool              `json:"deleted"`
 	AditionalInfoMap map[string]string `json:"aditionalInfoMap"`
 }
@@ -117,22 +120,30 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 	assetItems := []AssetItem{
 		{
 			AssetItemID:      "1",
-			CurrentOwnerID:   "1",
+			OwnerID:          "1",
+			StepID:           "1",
+			ParentID:         "0",
 			ProcessDate:      "2020-03-07T15:04:05",
 			DeliveryDate:     "",
 			OrderPrice:       "",
 			ShippingPrice:    "",
 			Status:           "order initiated",
+			Quantity:         "",
+			Deleted:          false,
 			AditionalInfoMap: aditionalInfoMap,
 		},
 		{
 			AssetItemID:      "2",
-			CurrentOwnerID:   "1",
+			OwnerID:          "1",
+			StepID:           "1",
+			ParentID:         "0",
 			ProcessDate:      "2020-03-07T15:04:05",
 			DeliveryDate:     "",
 			OrderPrice:       "",
 			ShippingPrice:    "",
 			Status:           "order initiated",
+			Quantity:         "",
+			Deleted:          false,
 			AditionalInfoMap: aditionalInfoMap,
 		},
 	}
@@ -225,7 +236,7 @@ func (s *AssetTransferSmartContract) CreateStep(ctx contractapi.TransactionConte
 }
 
 // CreateAssetItem adds a new AssetItem to the world state with given details
-func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, currentOwnerID string, processDate string, deliveryDate string, orderPrice string, shippingPrice string, status string, aditionalInfoMap map[string]string) error {
+func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, ownerID string, stepId string, processDate string, deliveryDate string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfoMap map[string]string) error {
 	assetItemJSON, err := ctx.GetStub().GetState("ASSET_ITEM_" + assetItemID)
 
 	if err != nil {
@@ -238,12 +249,15 @@ func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.Transaction
 
 	assetItem := AssetItem{
 		AssetItemID:      assetItemID,
-		CurrentOwnerID:   currentOwnerID,
+		OwnerID:          ownerID,
+		StepID:           "1",
+		ParentID:         "0",
 		ProcessDate:      processDate,
 		DeliveryDate:     deliveryDate,
 		OrderPrice:       orderPrice,
 		ShippingPrice:    shippingPrice,
 		Status:           status,
+		Quantity:         quantity,
 		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
@@ -508,28 +522,33 @@ func (s *AssetTransferSmartContract) QueryAllAssets(ctx contractapi.TransactionC
 	return assets, nil
 }
 
-// ChangeAssetItemOwner updates the owner field of assetItem with given id in world state
-func (s *AssetTransferSmartContract) ChangeAssetItemOwner(ctx contractapi.TransactionContextInterface, assetItemID string, newOwnerID string, orderPrice string, shippingPrice string, status string, aditionalInfo map[string]string) error {
-	assetItem, err := s.QueryAssetItem(ctx, "ASSET_ITEM_"+assetItemID)
+// MoveAssetItem updates the owner field of assetItem with given id in world state
+func (s *AssetTransferSmartContract) MoveAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, newAssetItemID string, stepID string, newOwnerID string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfo map[string]string) error {
+	_, err := s.QueryAssetItem(ctx, "ASSET_ITEM_"+assetItemID) // _ to oldAssetItem
 	if err != nil {
 		return err
 	}
 
-	assetItem.CurrentOwnerID = newOwnerID
-	assetItem.ProcessDate = time.Now().Format("2006-01-02 15:04:05")
-	assetItem.OrderPrice = orderPrice
-	assetItem.ShippingPrice = shippingPrice
-	assetItem.Status = status
-	for key, value := range aditionalInfo {
-		assetItem.AditionalInfoMap[key] = value
+	newAssetItem := AssetItem{
+		AssetItemID:      newAssetItemID,
+		OwnerID:          newOwnerID,
+		StepID:           stepID,
+		ParentID:         assetItemID,
+		ProcessDate:      time.Now().Format("2006-01-02 15:04:05"),
+		OrderPrice:       orderPrice,
+		ShippingPrice:    shippingPrice,
+		Status:           status,
+		Quantity:         quantity,
+		Deleted:          false,
+		AditionalInfoMap: aditionalInfo,
 	}
 
-	assetItemAsBytes, err := json.Marshal(assetItem)
+	assetItemAsBytes, err := json.Marshal(newAssetItem)
 	if err != nil {
 		return err
 	}
 
-	return ctx.GetStub().PutState("ASSET_ITEM_"+assetItemID, assetItemAsBytes)
+	return ctx.GetStub().PutState("ASSET_ITEM_"+newAssetItemID, assetItemAsBytes)
 }
 
 // UpdateActor updates an existing Actor to the world state with given details
@@ -590,7 +609,7 @@ func (s *AssetTransferSmartContract) UpdateStep(ctx contractapi.TransactionConte
 }
 
 // UpdateAssetItem updates an existing AssetItem to the world state with given details
-func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, currentOwnerID string, processDate string, deliveryDate string, orderPrice string, shippingPrice string, status string, aditionalInfoMap map[string]string) error {
+func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, ownerID string, stepID string, parentID string, processDate string, deliveryDate string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfoMap map[string]string) error {
 	assetItemJSON, err := ctx.GetStub().GetState("ASSET_ITEM_" + assetItemID)
 
 	if err != nil {
@@ -603,12 +622,15 @@ func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.Transaction
 
 	assetItem := AssetItem{
 		AssetItemID:      assetItemID,
-		CurrentOwnerID:   currentOwnerID,
+		OwnerID:          ownerID,
+		StepID:           stepID,
+		ParentID:         parentID,
 		ProcessDate:      processDate,
 		DeliveryDate:     deliveryDate,
 		OrderPrice:       orderPrice,
 		ShippingPrice:    shippingPrice,
 		Status:           status,
+		Quantity:         quantity,
 		Deleted:          false,
 		AditionalInfoMap: aditionalInfoMap,
 	}
