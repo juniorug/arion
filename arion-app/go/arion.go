@@ -236,7 +236,7 @@ func (s *AssetTransferSmartContract) CreateStep(ctx contractapi.TransactionConte
 }
 
 // CreateAssetItem adds a new AssetItem to the world state with given details
-func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, ownerID string, stepId string, processDate string, deliveryDate string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfoMap map[string]string) error {
+func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, ownerID string, stepId string, deliveryDate string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfoMap map[string]string) error {
 	assetItemJSON, err := ctx.GetStub().GetState("ASSET_ITEM_" + assetItemID)
 
 	if err != nil {
@@ -252,7 +252,7 @@ func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.Transaction
 		OwnerID:          ownerID,
 		StepID:           "1",
 		ParentID:         "0",
-		ProcessDate:      processDate,
+		ProcessDate:      time.Now().Format("2006-01-02 15:04:05"),
 		DeliveryDate:     deliveryDate,
 		OrderPrice:       orderPrice,
 		ShippingPrice:    shippingPrice,
@@ -609,7 +609,7 @@ func (s *AssetTransferSmartContract) UpdateStep(ctx contractapi.TransactionConte
 }
 
 // UpdateAssetItem updates an existing AssetItem to the world state with given details
-func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, ownerID string, stepID string, parentID string, processDate string, deliveryDate string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfoMap map[string]string) error {
+func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, ownerID string, stepID string, parentID string, deliveryDate string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfoMap map[string]string) error {
 	assetItemJSON, err := ctx.GetStub().GetState("ASSET_ITEM_" + assetItemID)
 
 	if err != nil {
@@ -625,7 +625,7 @@ func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.Transaction
 		OwnerID:          ownerID,
 		StepID:           stepID,
 		ParentID:         parentID,
-		ProcessDate:      processDate,
+		ProcessDate:      time.Now().Format("2006-01-02 15:04:05"),
 		DeliveryDate:     deliveryDate,
 		OrderPrice:       orderPrice,
 		ShippingPrice:    shippingPrice,
