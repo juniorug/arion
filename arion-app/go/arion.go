@@ -22,6 +22,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 
@@ -549,6 +550,36 @@ func (s *AssetTransferSmartContract) MoveAssetItem(ctx contractapi.TransactionCo
 	}
 
 	return ctx.GetStub().PutState("ASSET_ITEM_"+newAssetItemID, assetItemAsBytes)
+}
+
+// QueryAssetItem returns the AssetItem stored in the world state with given id
+func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string) ([]*AssetItem, error) {
+	assetItem, err := s.QueryAssetItem(ctx, "ASSET_ITEM_"+assetItemID)
+	log.Print("tracking info from assetItem id: ", assetItem.AssetItemID)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
+	}
+
+	if assetItem == nil {
+		return nil, fmt.Errorf("%s does not exist", assetItemID)
+	}
+
+	trackedItems := make([]*AssetItem, 0)
+
+	trackedItems = append(trackedItems, assetItem)
+	for {
+		parentId, err := strconv.Atoi(assetItem.ParentID)
+		log.Print("parentId: ", parentId)
+		if parentId <= 0 {
+			break
+		}
+		assetItem, err := s.QueryAssetItem(ctx, "ASSET_ITEM_"+assetItem.ParentID)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
+		}
+		trackedItems = append(trackedItems, assetItem)
+	}
+	return trackedItems, nil
 }
 
 // UpdateActor updates an existing Actor to the world state with given details
