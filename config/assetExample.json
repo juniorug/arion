@@ -1,0 +1,97 @@
+{
+   "assetID":"1",
+   "assetName":"Gravel",
+   "assetItems":[
+      {
+         "assetItemID":"1",
+         "ownerID":"1",
+         "stepID":"1",
+         "parentID":"0",
+         "processDate":"2021-04-07 02:33:43",
+         "deliveryDate":"2020-03-07T15:04:05",
+         "orderPrice":"",
+         "shippingPrice":"",
+         "status":"order initiated",
+         "quantity":"2",
+         "deleted":false,
+         "aditionalInfoMap":{
+            
+         }
+      },
+      {
+         "assetItemID":"2",
+         "ownerID":"1",
+         "stepID":"1",
+         "parentID":"0",
+         "processDate":"2021-04-07 02:33:43",
+         "deliveryDate":"2020-03-07T15:04:05",
+         "orderPrice":"",
+         "shippingPrice":"",
+         "status":"order initiated",
+         "quantity":"2",
+         "deleted":false,
+         "aditionalInfoMap":{
+            
+         }
+      },
+      {
+         "assetItemID":"3",
+         "ownerID":"2",
+         "stepID":"2",
+         "parentID":"1",
+         "processDate":"2021-04-07 02:45:11",
+         "deliveryDate":"",
+         "orderPrice":"50",
+         "shippingPrice":"5",
+         "status":"producing",
+         "quantity":"1",
+         "deleted":false,
+         "aditionalInfoMap":{
+            
+         }
+      },
+      {
+         "assetItemID":"4",
+         "ownerID":"2",
+         "stepID":"2",
+         "parentID":"1",
+         "processDate":"2021-04-07 02:45:59",
+         "deliveryDate":"",
+         "orderPrice":"50",
+         "shippingPrice":"5",
+         "status":"producing",
+         "quantity":"1",
+         "deleted":false,
+         "aditionalInfoMap":{
+            
+         }
+      }
+   ],
+   "actors":[
+      {
+         "actorID":"1",
+         "actorType":"rawMaterial",
+         "actorName":"James JohnsonX9",
+         "deleted":false,
+         "aditionalInfoMap":{
+            
+         }
+      }
+   ],
+   "steps":[
+      {
+         "stepID":"1",
+         "stepName":"exploration",
+         "stepOrder":1,
+         "actorType":"rawMaterial",
+         "deleted":false,
+         "aditionalInfoMap":{
+            
+         }
+      }
+   ],
+   "deleted":false,
+   "aditionalInfoMap":{
+      
+   }
+}

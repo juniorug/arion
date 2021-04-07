@@ -523,65 +523,6 @@ func (s *AssetTransferSmartContract) QueryAllAssets(ctx contractapi.TransactionC
 	return assets, nil
 }
 
-// MoveAssetItem updates the owner field of assetItem with given id in world state
-func (s *AssetTransferSmartContract) MoveAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, newAssetItemID string, stepID string, newOwnerID string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfo map[string]string) error {
-	_, err := s.QueryAssetItem(ctx, "ASSET_ITEM_"+assetItemID) // _ to oldAssetItem
-	if err != nil {
-		return err
-	}
-
-	newAssetItem := AssetItem{
-		AssetItemID:      newAssetItemID,
-		OwnerID:          newOwnerID,
-		StepID:           stepID,
-		ParentID:         assetItemID,
-		ProcessDate:      time.Now().Format("2006-01-02 15:04:05"),
-		OrderPrice:       orderPrice,
-		ShippingPrice:    shippingPrice,
-		Status:           status,
-		Quantity:         quantity,
-		Deleted:          false,
-		AditionalInfoMap: aditionalInfo,
-	}
-
-	assetItemAsBytes, err := json.Marshal(newAssetItem)
-	if err != nil {
-		return err
-	}
-
-	return ctx.GetStub().PutState("ASSET_ITEM_"+newAssetItemID, assetItemAsBytes)
-}
-
-// QueryAssetItem returns the AssetItem stored in the world state with given id
-func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string) ([]*AssetItem, error) {
-	assetItem, err := s.QueryAssetItem(ctx, "ASSET_ITEM_"+assetItemID)
-	log.Print("tracking info from assetItem id: ", assetItem.AssetItemID)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
-	}
-
-	if assetItem == nil {
-		return nil, fmt.Errorf("%s does not exist", assetItemID)
-	}
-
-	trackedItems := make([]*AssetItem, 0)
-
-	trackedItems = append(trackedItems, assetItem)
-	for {
-		parentId, err := strconv.Atoi(assetItem.ParentID)
-		log.Print("parentId: ", parentId)
-		if parentId <= 0 {
-			break
-		}
-		assetItem, err := s.QueryAssetItem(ctx, "ASSET_ITEM_"+assetItem.ParentID)
-		if err != nil {
-			return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
-		}
-		trackedItems = append(trackedItems, assetItem)
-	}
-	return trackedItems, nil
-}
-
 // UpdateActor updates an existing Actor to the world state with given details
 func (s *AssetTransferSmartContract) UpdateActor(ctx contractapi.TransactionContextInterface, actorID string, actorType string, actorName string, aditionalInfoMap map[string]string) error {
 	actorJSON, err := ctx.GetStub().GetState("ACTOR_" + actorID)
@@ -869,6 +810,69 @@ func (s *AssetTransferSmartContract) DeleteAsset(ctx contractapi.TransactionCont
 	}
 
 	return ctx.GetStub().PutState("ASSET_"+assetID, assetAsBytes)
+}
+
+// MoveAssetItem updates the owner field of assetItem with given id in world state
+func (s *AssetTransferSmartContract) MoveAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, newAssetItemID string, stepID string, newOwnerID string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfo map[string]string) error {
+	_, err := s.QueryAssetItem(ctx, assetItemID) // _ to oldAssetItem
+	if err != nil {
+		return err
+	}
+
+	newAssetItem := AssetItem{
+		AssetItemID:      newAssetItemID,
+		OwnerID:          newOwnerID,
+		StepID:           stepID,
+		ParentID:         assetItemID,
+		ProcessDate:      time.Now().Format("2006-01-02 15:04:05"),
+		OrderPrice:       orderPrice,
+		ShippingPrice:    shippingPrice,
+		Status:           status,
+		Quantity:         quantity,
+		Deleted:          false,
+		AditionalInfoMap: aditionalInfo,
+	}
+
+	assetItemAsBytes, err := json.Marshal(newAssetItem)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState("ASSET_ITEM_"+newAssetItemID, assetItemAsBytes)
+}
+
+// QueryAssetItem returns the AssetItem stored in the world state with given id
+func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string) ([]*AssetItem, error) {
+	assetItem, err := s.QueryAssetItem(ctx, assetItemID)
+	log.Print("tracking info from assetItem id: ", assetItem.AssetItemID)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
+	}
+
+	if assetItem == nil {
+		return nil, fmt.Errorf("%s does not exist", assetItemID)
+	}
+
+	trackedItems := make([]*AssetItem, 0)
+
+	trackedItems = append(trackedItems, assetItem)
+	for {
+		currentParentId, err := strconv.Atoi(assetItem.ParentID)
+		log.Print("currentParentId: ", currentParentId)
+		if currentParentId <= 0 {
+			log.Print("oldParentId is equals or less than 0. break it")
+			break
+		}
+		parentAssetItem, err := s.QueryAssetItem(ctx, assetItem.ParentID)
+		if err != nil {
+			return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
+		}
+		newParentId, err := strconv.Atoi(parentAssetItem.ParentID)
+		log.Print("newParentId: ", newParentId)
+		trackedItems = append(trackedItems, parentAssetItem)
+		assetItem = parentAssetItem
+	}
+	return trackedItems, nil
 }
 
 func main() {
