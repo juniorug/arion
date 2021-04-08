@@ -7,7 +7,7 @@
          "ownerID":"1",
          "stepID":"1",
          "parentID":"0",
-         "processDate":"2021-04-07 02:33:43",
+         "processDate":"2021-04-08 02:34:28",
          "deliveryDate":"2020-03-07T15:04:05",
          "orderPrice":"",
          "shippingPrice":"",
@@ -23,7 +23,7 @@
          "ownerID":"1",
          "stepID":"1",
          "parentID":"0",
-         "processDate":"2021-04-07 02:33:43",
+         "processDate":"2021-04-08 02:34:28",
          "deliveryDate":"2020-03-07T15:04:05",
          "orderPrice":"",
          "shippingPrice":"",
@@ -76,6 +76,15 @@
          "aditionalInfoMap":{
             
          }
+      },
+      {
+         "actorID":"2",
+         "actorType":"manufacturer",
+         "actorName":"Donald Jackson",
+         "deleted":false,
+         "aditionalInfoMap":{
+            
+         }
       }
    ],
    "steps":[
@@ -84,6 +93,16 @@
          "stepName":"exploration",
          "stepOrder":1,
          "actorType":"rawMaterial",
+         "deleted":false,
+         "aditionalInfoMap":{
+            
+         }
+      },
+      {
+         "stepID":"2",
+         "stepName":"production",
+         "stepOrder":2,
+         "actorType":"manufacturer",
          "deleted":false,
          "aditionalInfoMap":{
             
