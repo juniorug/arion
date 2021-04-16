@@ -114,5 +114,57 @@
       "aditionalInfoMap":{
          
       }
+   },
+   {
+      "assetID":"2",
+      "assetName":"Coffee",
+      "assetItems":[
+      ],
+      "actors":[
+         {
+            "actorID":"3",
+            "actorType":"coffee grower",
+            "actorName":"Andrew O'connell",
+            "deleted":false,
+            "aditionalInfoMap":{
+               
+            }
+         },
+         {
+            "actorID":"4",
+            "actorType":"producer",
+            "actorName":"Olivia Jones",
+            "deleted":false,
+            "aditionalInfoMap":{
+               
+            }
+         }
+      ],
+      "steps":[
+         {
+            "stepID":"3",
+            "stepName":"extraction",
+            "stepOrder":1,
+            "actorType":"coffee grower",
+            "deleted":false,
+            "aditionalInfoMap":{
+               
+            }
+         },
+         {
+            "stepID":"2",
+            "stepName":"production",
+            "stepOrder":2,
+            "actorType":"producer",
+            "deleted":false,
+            "aditionalInfoMap":{
+               
+            }
+         }
+      ],
+      "deleted":false,
+      "aditionalInfoMap":{
+         
+      }
    }
 ]
