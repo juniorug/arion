@@ -60,6 +60,7 @@ type AssetItem struct {
 	OwnerID          string            `json:"ownerID"`
 	StepID           string            `json:"stepID"`
 	ParentID         string            `json:"parentID"`
+	Children         []string          `json:"children"`
 	ProcessDate      string            `json:"processDate"`  //(date which currenct actor acquired the item)
 	DeliveryDate     string            `json:"deliveryDate"` //(date which currenct actor received the item)
 	OrderPrice       string            `json:"orderPrice"`
@@ -124,6 +125,7 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 			OwnerID:          "1",
 			StepID:           "1",
 			ParentID:         "0",
+			Children:         []string{},
 			ProcessDate:      "2020-03-07T15:04:05",
 			DeliveryDate:     "",
 			OrderPrice:       "",
@@ -138,6 +140,7 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 			OwnerID:          "1",
 			StepID:           "1",
 			ParentID:         "0",
+			Children:         []string{},
 			ProcessDate:      "2020-03-07T15:04:05",
 			DeliveryDate:     "",
 			OrderPrice:       "",
@@ -258,6 +261,7 @@ func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.Transaction
 		OwnerID:          ownerID,
 		StepID:           "1",
 		ParentID:         "0",
+		Children:         []string{},
 		ProcessDate:      time.Now().Format("2006-01-02 15:04:05"),
 		DeliveryDate:     deliveryDate,
 		OrderPrice:       orderPrice,
@@ -594,7 +598,7 @@ func (s *AssetTransferSmartContract) UpdateStep(ctx contractapi.TransactionConte
 }
 
 // UpdateAssetItem updates an existing AssetItem to the world state with given details
-func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, ownerID string, stepID string, parentID string, deliveryDate string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfoMap map[string]string) error {
+func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string, ownerID string, stepID string, parentID string, children []string, deliveryDate string, orderPrice string, shippingPrice string, status string, quantity string, aditionalInfoMap map[string]string) error {
 	assetItemJSON, err := ctx.GetStub().GetState("ASSET_ITEM_" + assetItemID)
 
 	if err != nil {
@@ -610,6 +614,7 @@ func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.Transaction
 		OwnerID:          ownerID,
 		StepID:           stepID,
 		ParentID:         parentID,
+		Children:         children,
 		ProcessDate:      time.Now().Format("2006-01-02 15:04:05"),
 		DeliveryDate:     deliveryDate,
 		OrderPrice:       orderPrice,
@@ -842,6 +847,7 @@ func (s *AssetTransferSmartContract) MoveAssetItem(ctx contractapi.TransactionCo
 		OwnerID:          newOwnerID,
 		StepID:           stepID,
 		ParentID:         assetItemID,
+		Children:         []string{},
 		ProcessDate:      time.Now().Format("2006-01-02 15:04:05"),
 		OrderPrice:       orderPrice,
 		ShippingPrice:    shippingPrice,
@@ -873,7 +879,17 @@ func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionC
 
 	trackedItems := make([]*AssetItem, 0)
 
+	//first add the children to tracked items
+	children, err := getChildenTree(assetItem)
+	for _, child := range children { //for index, child...
+		fmt.Println(child)
+		trackedItems = append(trackedItems, child)
+	}
+
+	//then, add the current item to tracked items
 	trackedItems = append(trackedItems, assetItem)
+
+	//finally, add the ancestor of current item to tracked items
 	for {
 		currentParentId, err := strconv.Atoi(assetItem.ParentID)
 		log.Print("currentParentId: ", currentParentId)
@@ -891,6 +907,20 @@ func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionC
 		assetItem = parentAssetItem
 	}
 	return trackedItems, nil
+}
+
+func getChildenTree(assetItem *AssetItem) ([]*AssetItem, error) {
+	tree := make([]*AssetItem, 0)
+	log.Print("len(assetItem.Children): ", len(assetItem.Children))
+	if len(assetItem.Children) == 0 {
+		tree = append(tree, assetItem)
+	} else {
+		for _, child := range assetItem.Children { //for index, child...
+			fmt.Println(child)
+			//TODOOOOOOO
+			trackedItems = append(trackedItems, child)
+		}
+	}
 }
 
 func main() {
