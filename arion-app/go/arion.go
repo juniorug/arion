@@ -75,6 +75,7 @@ type AssetItem struct {
 type Asset struct {
 	AssetID          string            `json:"assetID"`
 	AssetName        string            `json:"assetName"`
+	Description      string            `json:"description"`
 	AssetItems       []AssetItem       `json:"assetItems"`
 	Actors           []Actor           `json:"actors"`
 	Steps            []Step            `json:"steps"`
@@ -164,6 +165,7 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 		{
 			AssetID:          "1",
 			AssetName:        "Gravel",
+			Description:      "Gravel scm"
 			AssetItems:       assetItems,
 			Actors:           actors,
 			Steps:            steps,
@@ -282,7 +284,7 @@ func (s *AssetTransferSmartContract) CreateAssetItem(ctx contractapi.Transaction
 }
 
 // CreateAsset adds a new Asset with empty arrays to the world state with given details
-func (s *AssetTransferSmartContract) CreateEmptyAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, aditionalInfoMap map[string]string) error {
+func (s *AssetTransferSmartContract) CreateEmptyAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, description string, aditionalInfoMap map[string]string) error {
 	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
 
 	if err != nil {
@@ -296,6 +298,7 @@ func (s *AssetTransferSmartContract) CreateEmptyAsset(ctx contractapi.Transactio
 	asset := Asset{
 		AssetID:          assetID,
 		AssetName:        assetName,
+		Description:      description,
 		AssetItems:       []AssetItem{},
 		Actors:           []Actor{},
 		Steps:            []Step{},
@@ -312,7 +315,7 @@ func (s *AssetTransferSmartContract) CreateEmptyAsset(ctx contractapi.Transactio
 }
 
 // CreateAsset adds a new Asset to the world state with given details
-func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
+func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, description string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
 	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
 
 	if err != nil {
@@ -326,6 +329,7 @@ func (s *AssetTransferSmartContract) CreateAsset(ctx contractapi.TransactionCont
 	asset := Asset{
 		AssetID:          assetID,
 		AssetName:        assetName,
+		Description:      description,
 		AssetItems:       assetItems,
 		Actors:           actors,
 		Steps:            steps,
@@ -634,7 +638,7 @@ func (s *AssetTransferSmartContract) UpdateAssetItem(ctx contractapi.Transaction
 }
 
 // UpdateAsset updates an existing Asset to the world state with given details
-func (s *AssetTransferSmartContract) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
+func (s *AssetTransferSmartContract) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, description string, assetItems []AssetItem, actors []Actor, steps []Step, aditionalInfoMap map[string]string) error {
 	assetJSON, err := ctx.GetStub().GetState("ASSET_" + assetID)
 
 	if err != nil {
@@ -648,6 +652,7 @@ func (s *AssetTransferSmartContract) UpdateAsset(ctx contractapi.TransactionCont
 	asset := Asset{
 		AssetID:          assetID,
 		AssetName:        assetName,
+		Description:      description,
 		AssetItems:       assetItems,
 		Actors:           actors,
 		Steps:            steps,
@@ -880,7 +885,11 @@ func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionC
 	trackedItems := make([]*AssetItem, 0)
 
 	//first add the children to tracked items
-	children, err := getChildenTree(assetItem)
+	children, err := s.getChildenTree(ctx, assetItem)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
+	}
+
 	for _, child := range children { //for index, child...
 		fmt.Println(child)
 		trackedItems = append(trackedItems, child)
@@ -893,7 +902,7 @@ func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionC
 	for {
 		currentParentId, err := strconv.Atoi(assetItem.ParentID)
 		log.Print("currentParentId: ", currentParentId)
-		if currentParentId <= 0 {
+		if (currentParentId <= 0) {
 			log.Print("oldParentId is equals or less than 0. break it")
 			break
 		}
@@ -909,18 +918,33 @@ func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionC
 	return trackedItems, nil
 }
 
-func getChildenTree(assetItem *AssetItem) ([]*AssetItem, error) {
+func (s *AssetTransferSmartContract) getChildenTree(ctx contractapi.TransactionContextInterface, assetItem *AssetItem) ([]*AssetItem, error) {
 	tree := make([]*AssetItem, 0)
 	log.Print("len(assetItem.Children): ", len(assetItem.Children))
 	if len(assetItem.Children) == 0 {
 		tree = append(tree, assetItem)
 	} else {
-		for _, child := range assetItem.Children { //for index, child...
-			fmt.Println(child)
-			//TODOOOOOOO
-			trackedItems = append(trackedItems, child)
+
+		for _, childId := range assetItem.Children { //for index, child...
+			fmt.Println("childId: ", childId)
+
+			childAssetItem, err := s.QueryAssetItem(ctx, childId)
+			log.Print("tracking child info from assetItem id: ", childId)
+			if err != nil {
+				return nil, fmt.Errorf("Failed to read from world state. %s", err.Error())
+			}
+			if childAssetItem == nil {
+				return nil, fmt.Errorf("%s does not exist", childId)
+			}
+
+			childrenTree, err := s.getChildenTree(ctx, childAssetItem)
+			for _, child := range childrenTree {
+				tree = append(tree, child)
+			}
 		}
+		tree = append(tree, assetItem)
 	}
+	return tree, nil
 }
 
 func main() {
