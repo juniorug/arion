@@ -870,7 +870,7 @@ func (s *AssetTransferSmartContract) MoveAssetItem(ctx contractapi.TransactionCo
 	return ctx.GetStub().PutState("ASSET_ITEM_"+newAssetItemID, assetItemAsBytes)
 }
 
-// QueryAssetItem returns the AssetItem stored in the world state with given id
+// TrackAssetItem returns the hierarchy of current asset item
 func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionContextInterface, assetItemID string) ([]*AssetItem, error) {
 	assetItem, err := s.QueryAssetItem(ctx, assetItemID)
 	log.Print("tracking info from assetItem id: ", assetItem.AssetItemID)
