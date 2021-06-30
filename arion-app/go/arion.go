@@ -165,7 +165,7 @@ func (s *AssetTransferSmartContract) InitLedger(ctx contractapi.TransactionConte
 		{
 			AssetID:          "1",
 			AssetName:        "Gravel",
-			Description:      "Gravel scm"
+			Description:      "Gravel scm",
 			AssetItems:       assetItems,
 			Actors:           actors,
 			Steps:            steps,
@@ -902,7 +902,7 @@ func (s *AssetTransferSmartContract) TrackAssetItem(ctx contractapi.TransactionC
 	for {
 		currentParentId, err := strconv.Atoi(assetItem.ParentID)
 		log.Print("currentParentId: ", currentParentId)
-		if (currentParentId <= 0) {
+		if currentParentId <= 0 {
 			log.Print("oldParentId is equals or less than 0. break it")
 			break
 		}
