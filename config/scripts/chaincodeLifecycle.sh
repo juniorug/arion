@@ -8,10 +8,10 @@ export CORE_PEER_TLS_ROOTCERT_FILE_ORG2=${PWD}/organizations/peerOrganizations/o
 
 CHANNEL_NAME="testchannel"
 CHAINCODE_NAME="arion"
-CHAINCODE_VERSION="1"
+CHAINCODE_VERSION="1.0.0"
 CHAINCODE_PATH="../chaincode/arion-app/go/"
 CHAINCODE_LANG="golang"
-CHAINCODE_LABEL="arion_1"
+CHAINCODE_LABEL="arion_1_0_0"
 
 setEnvVarsForPeer0Org1() {
    export CORE_PEER_LOCALMSPID="Org1MSP"
@@ -140,6 +140,22 @@ chaincodeTransferPropertyOwnership() {
    echo "===================== Successfully Invoked Property Ownership Transferred Chanicode Function===================== "
 }
 
+chaincodeAddAsset() {
+   echo "===================== Started Add Asset Chanicode Function===================== "
+   setEnvVarsForPeer0Org1
+   peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C ${CHANNEL_NAME} --name ${CHAINCODE_NAME} \
+      --peerAddresses localhost:7051 --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE_ORG1 --peerAddresses localhost:9051 --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE_ORG2 -c '{"Args":["CreateAsset", "999", "Gold", "[]", "[]", "[]", "{}"]}'
+   echo "===================== Successfully Added New Asset===================== "
+}
+
+chaincodeQueryAssetById() {
+   echo "===================== Started Query Asset By Id Chanicode Function===================== "
+   setEnvVarsForPeer0Org1
+   peer chaincode invoke -o $ORDERER_ADDRESS --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C ${CHANNEL_NAME} --name ${CHAINCODE_NAME} \
+      --peerAddresses localhost:7051 --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE_ORG1 --peerAddresses localhost:9051 --tlsRootCertFiles $CORE_PEER_TLS_ROOTCERT_FILE_ORG2 -c '{"Args":["QueryAsset", "999"]}'
+   echo "===================== Successfully Invoked Query Asset By Id Chanicode Function===================== "
+}
+
 sudo chmod -R 777 organizations/
 packageChaincode
 installChaincode
@@ -148,12 +164,12 @@ approveForMyOrg1
 checkCommitReadynessForOrg1
 approveForMyOrg2
 checkCommitReadynessForOrg2
-commitChaincodeDefination
+commitChaincodeDefinition
 queryCommitted
 chaincodeInvokeInit
 sleep 5
-chaincodeAddActor
+chaincodeAddAsset
 sleep 5
-chaincodeQueryPropertyById
+chaincodeQueryAssetById
 sleep 5
 #chaincodeTransferPropertyOwnership
